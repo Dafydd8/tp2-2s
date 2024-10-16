@@ -16,6 +16,20 @@ char* strDup(char* src) {
     return rv;
 }
 
+int strCmp(char* src1, char* src2) {
+    if(strLen(src1) != strLen(src2)) {
+        return 0;
+    }
+    int i = 0;
+    while (i < strLen(src1) && i < strLen(src2)) {
+        if (src1[i] != src2[i]) {
+            return 0;
+        }
+        i++;
+    }
+    return 1;
+}
+
 // Keys Predict
 
 struct keysPredict* keysPredictNew() {
@@ -27,46 +41,141 @@ struct keysPredict* keysPredictNew() {
 }
 
 void keysPredictAddWord(struct keysPredict* kt, char* word) {
-
-    // COMPLETAR
-
+    if (strLen(word) == 0) {
+        return;
+    }
+    struct node* current = kt->first;
+    struct node* prev = NULL;
+    int i = 0;
+    while (word[i] != '\0') {
+        if (current == NULL) {
+            current = addSortedNewNodeInLevel(&current, word[i]);
+            if (prev != NULL){
+                prev->down = current;
+            }else{
+                kt->first = current;
+            }
+            kt->totalKeys++;
+        } else {
+            struct node* found = findNodeInLevel(&current, word[i]);
+            if (found == NULL) {
+                struct node* first = addSortedNewNodeInLevel(&current, word[i]);
+                if (prev != NULL){
+                    prev->down = current;
+                }else{
+                    kt->first = first;
+                }
+                current = findNodeInLevel(&current, word[i]);
+                kt->totalKeys++;
+            } else {
+                current = found;
+            }
+        }
+        prev = current;
+        current = current->down;
+        i++;
+    }
+    prev->end = 1;
+    prev->word = strDup(word);
+    kt->totalWords++;
 }
 
 void keysPredictRemoveWord(struct keysPredict* kt, char* word) {
-
-    // COMPLETAR
+    if (strLen(word) == 0){
+        return;
+    }
+    struct node* current = kt->first;
+    int i = 0;
+    while (i < strLen(word)-1) {
+        current = findNodeInLevel(&current, word[i]);
+        if (current == NULL){
+            return;
+        }
+        current = current->down;
+        i++;
+    }
+    current = findNodeInLevel(&current, word[i]);
+    if (current == NULL){
+        return;
+    }
+    free(current->word);
+    current->word = NULL;
+    current->end = 0;
+    kt->totalWords--;
 }
 
 struct node* keysPredictFind(struct keysPredict* kt, char* word) {
-
-    // COMPLETAR
-
+    int i = 0;
+    struct node* curr = kt->first;
+    while (i < strLen(word)-1) {
+        curr = findNodeInLevel(&curr, word[i]);
+        if (curr == NULL) {
+            return NULL;
+        }
+        curr = curr->down;
+        i++;
+    }
+    curr = findNodeInLevel(&curr, word[i]);
+    if (curr == NULL) {
+        return NULL;
+    }
+    if (curr->end == 1 && strCmp(curr->word, word)) {
+        return curr;
+    }
     return 0;
 }
 
 char** keysPredictRun(struct keysPredict* kt, char* partialWord, int* wordsCount) {
-
-    // COMPLETAR
-
-    return 0;
+    if (kt->first == NULL) {
+        return NULL;
+    }
+    *wordsCount = 0;
+    int i = 0;
+    struct node* curr = kt->first;
+    //PARARME AL FINAL DEL PREFIJO
+    while (i < strLen(partialWord)) {
+        curr = findNodeInLevel(&curr, partialWord[i]);
+        if (curr == NULL) {
+            return NULL;
+        }
+        curr = curr->down;
+        i++;
+    }
+    if (curr == NULL) {
+        return NULL;
+    }
+    //BUSCAR LAS PALABRAS RECURSIVAMENTE
+    struct node* found = NULL;
+    struct node* recorre = NULL;
+    encontrarPalabras(curr, wordsCount, &found, &recorre);
+    char** words = makeArrayFromList(found, *wordsCount);
+    //LIBERAR MEMORIA DE LISTA AUXILIAR
+    while(found != NULL) {
+        struct node* temp = found;
+        found = found->next;
+        free(temp);
+    }
+    return words;
 }
-
+/*
 int keysPredictCountWordAux(struct node* n) {
 
-    // COMPLETAR
+    // NO LA USE
 }
+*/
 
 char** keysPredictListAll(struct keysPredict* kt, int* wordsCount) {
-
-    // COMPLETAR
-
-    return 0;
+    char** words = keysPredictRun(kt, "", wordsCount);
+    return words;
 }
 
 void keysPredictDelete(struct keysPredict* kt) {
-
-    // COMPLETAR
-
+    if (kt->first == NULL) {
+        return;
+    }
+    struct node* current = kt->first;
+    borrarRecursiva(current);    
+    free(kt);
 }
 
 void keysPredictPrint(struct keysPredict* kt) {
@@ -95,14 +204,21 @@ void keysPredictPrintAux(struct node* n, int level) {
 void printList(struct node** list) {
     struct node* current = *list;
     while (current != NULL) {
+
         printf("%c, ", current->character);
         current = current->next;
     }
     printf("\n");
 }
 
+void printWords(char** words, int wordsCount) {
+    printf("Palabras encontradas (%d):\n", wordsCount);
+    for (int i = 0; i < wordsCount; i++) {
+        printf("  %s\n", words[i]);
+    }
+}
+
 struct node* findNodeInLevel(struct node** list, char character) {
-    int i = 0;
     struct node* curr = *list;
     while (curr != NULL && curr->character != character) {
         curr = curr->next;
@@ -112,15 +228,14 @@ struct node* findNodeInLevel(struct node** list, char character) {
 }
 
 struct node* addSortedNewNodeInLevel(struct node** list, char character) {
-    int i = 0;
     struct node* curr = *list;
     struct node* prev = 0;
     struct node* nuevo = (struct node*)malloc(sizeof(struct node));
     nuevo->character = character;
     nuevo->end = 0;
     nuevo->word = 0;
-    nuevo->down = 0;
-    while (curr != 0 && curr->character < character) {
+    nuevo->down = NULL;
+    while (curr != NULL && curr->character < character) {
         prev = curr;
         curr = curr->next;
     }
@@ -131,7 +246,7 @@ struct node* addSortedNewNodeInLevel(struct node** list, char character) {
         nuevo->next = curr;
         prev->next = nuevo;
     }
-    return nuevo;
+    return *list;
 }
 
 void deleteArrayOfWords(char** words, int wordsCount) {
@@ -145,74 +260,75 @@ void deleteArrayOfWords(char** words, int wordsCount) {
     free(words);
 }
 
-int main() {
-    // Pruebas para strLen (Ejercicio 1)
-    printf("Test strLen:\n");
-    char* testStrings[] = {"", "a", "abc123", "long test string"};
-    for (int i = 0; i < 4; i++) {
-        printf("String: '%s' - Length: %d\n", testStrings[i], strLen(testStrings[i]));
+void encontrarPalabras(struct node* curr, int* wordsCount, struct node** found, struct node** found_index){\
+    if (curr == NULL) {
+        return;
     }
+    if (curr->down == NULL && curr->next == NULL) {
+        if (curr->end == 1) {
+            struct node* new = (struct node*)malloc(sizeof(struct node));
+            new->character = curr->character;
+            new->end = curr->end;
+            new->word = curr->word;
+            new->down = NULL;
+            new->next = NULL;
+            if (*found == NULL) {
+                *found = new;
+                *found_index = new;
+            }else{
+                (*found_index)->next = new;
+                *found_index = new;
+            }
+            (*wordsCount)++;
+        }
+    }else{
+        encontrarPalabras(curr->down, wordsCount, found, found_index);
+        encontrarPalabras(curr->next, wordsCount, found, found_index);
+        if (curr->end == 1){
+            struct node* new = (struct node*)malloc(sizeof(struct node));
+            new->character = curr->character;
+            new->end = curr->end;
+            new->word = curr->word;
+            new->down = NULL;
+            new->next = NULL;
+            if (*found == NULL) {
+                *found = new;
+            }else{
+                (*found_index)->next = new;
+                *found_index = new;
+            }
+            (*wordsCount)++;
+        }
+    }
+}
 
-    // Pruebas para strDup (Ejercicio 1)
-    printf("\nTest strDup:\n");
-    for (int i = 0; i < 4; i++) {
-        char* duplicated = strDup(testStrings[i]);
-        printf("Original: '%s' - Duplicated: '%s'\n", testStrings[i], duplicated);
-        free(duplicated);
+char** makeArrayFromList(struct node* found, int wordsCount){
+    char** words = (char**)malloc(wordsCount * sizeof(char*));
+    struct node* current = found;
+    int i = 0;
+    while (i < wordsCount) {
+        words[i] = strDup(current->word);
+        current = current->next;
+        i++;
     }
+    return words;
+}
 
-    // Pruebas para findNodeInLevel (Ejercicio 2)
-    printf("\nTest findNodeInLevel:\n");
-    struct node* nodo1 = (struct node*) malloc(sizeof(struct node));
-    struct node* nodo2 = (struct node*) malloc(sizeof(struct node));
-    struct node* nodo3 = (struct node*) malloc(sizeof(struct node));
-    nodo1->character = 'b'; nodo1->next = nodo2;
-    nodo2->character = 'e'; nodo2->next = nodo3;
-    nodo3->character = 'g'; nodo3->next = NULL;
-    struct node** nodeList = &nodo1;
-
-    struct node* found = findNodeInLevel(nodeList, 'a');
-    if (found != NULL) {
-        printf("Found node with character: %c\n", found->character);
-    } else {
-        printf("Character %c not found.\n", 'a');
+void borrarRecursiva(struct node* n){
+    if (n == NULL){
+        return;
     }
-    found = findNodeInLevel(nodeList, 'b');
-    if (found != NULL) {
-        printf("Found node with character: %c\n", found->character);
-    } else {
-        printf("Character not found.\n");
+    if(n->down == NULL && n->next == NULL){
+        if (n->end == 1){
+            free(n->word);
+        }
+        free(n);
+    }else{
+        borrarRecursiva(n->down);
+        borrarRecursiva(n->next);
+        if (n->end == 1){
+            free(n->word);
+        }
+        free(n);
     }
-    found = findNodeInLevel(nodeList, 'e');
-    if (found != NULL) {
-        printf("Found node with character: %c\n", found->character);
-    } else {
-        printf("Character not found.\n");
-    }
-    found = findNodeInLevel(nodeList, 'g');
-    if (found != NULL) {
-        printf("Found node with character: %c\n", found->character);
-    } else {
-        printf("Character not found.\n");
-    }
-
-    // Pruebas para addSortedNewNodeInLevel (Ejercicio 2)
-    printf("\nTest addSortedNewNodeInLevel:\n");
-    struct node* nuevo = addSortedNewNodeInLevel(nodeList, 'a');
-    nuevo = addSortedNewNodeInLevel(nodeList, 'c');
-    nuevo = addSortedNewNodeInLevel(nodeList, 'm');
-    printList(nodeList);
-
-    // Pruebas para deleteArrayOfWords (Ejercicio 2)
-    printf("\nTest deleteArrayOfWords:\n");
-    char** words = (char**) malloc(3 * sizeof(char*));
-    words[0] = strDup("hello");
-    words[1] = strDup("world");
-    words[2] = strDup("test");
-    for (int i = 0; i < 3; i++) {
-        printf("Word %d: %s\n", i, words[i]);
-    }
-    deleteArrayOfWords(words, 3);  // Borra el arreglo y las strings
-
-    return 0;
 }

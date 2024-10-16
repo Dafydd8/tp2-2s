@@ -16,7 +16,7 @@ void predictAndPrintAll(struct keysPredict* kt, char* partialWord ) {
 
 void findAndPrintAll(struct keysPredict* kt, char* word ) {
     struct node* result = keysPredictFind(kt, word);
-    printf("Find: %s = %i\n", word, result==0);
+    printf("Find: %s = %i\n", word, result!=0);
 }
 
 int main() {
@@ -29,7 +29,7 @@ int main() {
 
     // strLen
     int len = strLen("hola");
-    printf("strDup(\"hola\") -> \"%i\"\n", len);
+    printf("strLen(\"hola\") -> \"%i\"\n", len);
     printf("\n");
 
     // strDup
@@ -86,10 +86,13 @@ int main() {
     keysPredictRemoveWord(kt,"aaa");
     keysPredictRemoveWord(kt,"papa");
     keysPredictRemoveWord(kt,"pata");
+    printf("all good\n");
     keysPredictPrint(kt);
+
 
     // keysPredict - borrar diccionario
     keysPredictDelete(kt);
+
 
     return 0;
 }

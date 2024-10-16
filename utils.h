@@ -41,7 +41,11 @@ void keysPredictDelete(struct keysPredict* kt);
 void keysPredictPrint(struct keysPredict* kt);
 
 // --- Auxiliar functions -----------------------------------------------------
-    
+
+void printList(struct node** list);
+
+void printWords(char** words, int wordsCount);
+
 void keysPredictPrintAux(struct node* n, int level);
 
 struct node* findNodeInLevel(struct node** list, char character);
@@ -50,6 +54,11 @@ struct node* addSortedNewNodeInLevel(struct node** list, char character);
 
 void deleteArrayOfWords(char** words, int wordsCount);
 
+void encontrarPalabras(struct node* curr, int* wordsCount, struct node** found, struct node** found_index);
+
+char** makeArrayFromList(struct node* found, int wordsCount);
+
+void borrarRecursiva(struct node* n);
 // --- Strings ----------------------------------------------------------------
 
 int strLen(char* src);
