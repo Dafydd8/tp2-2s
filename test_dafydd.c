@@ -194,7 +194,7 @@ int main() {
 
     // Caso 1: Prefijo que coincide con varias palabras
     printf("Caso 1: Prefijo 'ca' (debería encontrar 'casa', 'capa', 'carro', 'cargar').\n");
-    words = keysPredictRun(kt, "ca", &wordsCount);
+    words = keysPredictRun_v2(kt, "ca", &wordsCount);
     printWords(words, wordsCount);
     deleteArrayOfWords(words, wordsCount);
     // Caso 2: Prefijo que coincide con una sola palabra
@@ -214,7 +214,7 @@ int main() {
     // Caso 4: Prefijo que no coincide con ninguna palabra
     printf("\nCaso 4: Prefijo 'gat' (no debería encontrar ninguna palabra).\n");
     wordsCount = 0;
-    words = keysPredictRun(kt, "gat", &wordsCount);
+    words = keysPredictRun_v2(kt, "gat", &wordsCount);
     printWords(words, wordsCount);
     deleteArrayOfWords(words, wordsCount);
 
