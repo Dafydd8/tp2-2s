@@ -22,7 +22,8 @@ struct node {
     struct node* down;
 };
 
-//Estructura creada para resolver keysPredictRun de forma iterativa simil BFS
+// Estructura creada para resolver keysPredictRun de forma iterativa simil BFS
+// Agrega un puntero nuevo para anidar keys sin perder los next y down de la estructura original
 struct impostor_node {
     char character;
     struct node* next;
