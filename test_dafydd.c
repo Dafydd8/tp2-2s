@@ -39,19 +39,19 @@ int main() {
     if (found != NULL) {
         printf("Found node with character: %c\n", found->character);
     } else {
-        printf("Character not found.\n");
+        printf("Character %c not found.\n", 'b');
     }
     found = findNodeInLevel(nodeList, 'e');
     if (found != NULL) {
         printf("Found node with character: %c\n", found->character);
     } else {
-        printf("Character not found.\n");
+        printf("Character %c not found.\n", 'e');
     }
     found = findNodeInLevel(nodeList, 'g');
     if (found != NULL) {
         printf("Found node with character: %c\n", found->character);
     } else {
-        printf("Character not found.\n");
+        printf("Character %c not found.\n", 'g');
     }
 
     // Pruebas para addSortedNewNodeInLevel (Ejercicio 2)
@@ -65,7 +65,6 @@ int main() {
         first = first->next;
         free(temp);
     }
-
 
     // Pruebas para deleteArrayOfWords (Ejercicio 2)
 
