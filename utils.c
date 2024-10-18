@@ -150,14 +150,14 @@ char** keysPredictRun(struct keysPredict* kt, char* partialWord, int* wordsCount
         return NULL;
     }
     //BUSCAR LAS PALABRAS RECURSIVAMENTE
-    struct node* found = NULL;
-    struct node* recorre = NULL;
-    encontrarPalabras(curr, wordsCount, &found, &recorre);
-    char** words = makeArrayFromList(found, *wordsCount);
+    struct node* lista_palabras = NULL;
+    struct node* palabras_recorre = NULL;
+    encontrarPalabras(curr, wordsCount, &lista_palabras, &palabras_recorre);
+    char** words = makeArrayFromList(lista_palabras, *wordsCount);
     //LIBERAR MEMORIA DE LISTA AUXILIAR
-    while(found != NULL) {
-        struct node* temp = found;
-        found = found->next;
+    while(lista_palabras != NULL) {
+        struct node* temp = lista_palabras;
+        lista_palabras = lista_palabras->next;
         free(temp);
     }
     return words;
@@ -335,7 +335,7 @@ void printWords(char** words, int wordsCount) {
 }
 
 // Función recursiva para encontrar palabras (para keysPredictRun)
-void encontrarPalabras(struct node* curr, int* wordsCount, struct node** found, struct node** found_index){\
+void encontrarPalabras(struct node* curr, int* wordsCount, struct node** lista_palabras, struct node** palabras_recorre){\
     if (curr == NULL) {
         return;
     }
@@ -347,18 +347,18 @@ void encontrarPalabras(struct node* curr, int* wordsCount, struct node** found, 
             new->word = curr->word;
             new->down = NULL;
             new->next = NULL;
-            if (*found == NULL) {
-                *found = new;
-                *found_index = new;
+            if (*lista_palabras == NULL) {
+                *lista_palabras = new;
+                *palabras_recorre = new;
             }else{
-                (*found_index)->next = new;
-                *found_index = new;
+                (*palabras_recorre)->next = new;
+                *palabras_recorre = new;
             }
             (*wordsCount)++;
         }
     }else{
-        encontrarPalabras(curr->down, wordsCount, found, found_index);
-        encontrarPalabras(curr->next, wordsCount, found, found_index);
+        encontrarPalabras(curr->down, wordsCount, lista_palabras, palabras_recorre);
+        encontrarPalabras(curr->next, wordsCount, lista_palabras, palabras_recorre);
         if (curr->end == 1){
             struct node* new = (struct node*)malloc(sizeof(struct node));
             new->character = curr->character;
@@ -366,11 +366,11 @@ void encontrarPalabras(struct node* curr, int* wordsCount, struct node** found, 
             new->word = curr->word;
             new->down = NULL;
             new->next = NULL;
-            if (*found == NULL) {
-                *found = new;
+            if (*lista_palabras == NULL) {
+                *lista_palabras = new;
             }else{
-                (*found_index)->next = new;
-                *found_index = new;
+                (*palabras_recorre)->next = new;
+                *palabras_recorre = new;
             }
             (*wordsCount)++;
         }
@@ -378,9 +378,9 @@ void encontrarPalabras(struct node* curr, int* wordsCount, struct node** found, 
 }
 
 // Función para convertir una lista de nodos en un array de strings (para keysPredictRun)
-char** makeArrayFromList(struct node* found, int wordsCount){
+char** makeArrayFromList(struct node* lista_palabras, int wordsCount){
     char** words = (char**)malloc(wordsCount * sizeof(char*));
-    struct node* current = found;
+    struct node* current = lista_palabras;
     int i = 0;
     while (i < wordsCount) {
         words[i] = strDup(current->word);
@@ -391,9 +391,9 @@ char** makeArrayFromList(struct node* found, int wordsCount){
 }
 
 // Función para convertir una lista de impostor_nodes en un array de strings (para keysPredictRun_v2)
-char** makeArrayFromImpostorList(struct impostor_node* found, int wordsCount){
+char** makeArrayFromImpostorList(struct impostor_node* lista_palabras, int wordsCount){
     char** words = (char**)malloc(wordsCount * sizeof(char*));
-    struct impostor_node* current = found;
+    struct impostor_node* current = lista_palabras;
     int i = 0;
     while (i < wordsCount) {
         words[i] = strDup(current->word);

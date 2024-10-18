@@ -67,11 +67,11 @@ void printList(struct node** list); // para debug
 
 void printWords(char** words, int wordsCount); // para debug
 
-void encontrarPalabras(struct node* curr, int* wordsCount, struct node** found, struct node** found_index); // para keysPredictRun
+void encontrarPalabras(struct node* curr, int* wordsCount, struct node** lista_palabras, struct node** palabras_recorre); // para keysPredictRun
 
-char** makeArrayFromList(struct node* found, int wordsCount); // para keysPredictRun
+char** makeArrayFromList(struct node* lista_palabras, int wordsCount); // para keysPredictRun
 
-char** makeArrayFromImpostorList(struct impostor_node* found, int wordsCount); // para keysPredictRun_v2
+char** makeArrayFromImpostorList(struct impostor_node* lista_palabras, int wordsCount); // para keysPredictRun_v2
 
 struct impostor_node* impostorDup(struct impostor_node* n); // para keysPredictRun_v2
 
