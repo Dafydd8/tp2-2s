@@ -79,9 +79,11 @@ void keysPredictAddWord(struct keysPredict* kt, char* word) {
         current = current->down;
         i++;
     }
-    prev->end = 1;
-    prev->word = strDup(word);
-    kt->totalWords++;
+    if (prev->end!=1){
+        prev->end = 1;
+        prev->word = strDup(word);
+        kt->totalWords++;
+    }
 }
 
 void keysPredictRemoveWord(struct keysPredict* kt, char* word) {
